@@ -1487,6 +1487,8 @@ def main():
         print("The computer won!")
     else: print("The player won!")
 
+print("test")
+
 main()
 
 # def playerTurn():
