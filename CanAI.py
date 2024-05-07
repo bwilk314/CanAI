@@ -6,6 +6,7 @@ global compScore
 playerScore = 0
 compScore = 0
 
+# Defines global variables and initialize dictionaries
 def createLists():
     global ranks 
     global suits
@@ -73,11 +74,13 @@ def createLists():
     for rank in refScores.keys():
         knownPlayerCards[rank] = 0
 
+# Create a deck of 52 cards - 13 ranks with 4 suits
 def buildLibrary():
     for suit in suits.keys():
         for rank in ranks.keys():
             library[rank + suit] = ranks[rank] + " of " + suits[suit]
 
+# Build a canasta deck of 108 cards - 2 decks of 52 cards plus 4 jokers
 def buildDeck():
     for card in library.keys():
         deck.append(card)
@@ -86,6 +89,7 @@ def buildDeck():
         deck.append("OO")
     random.shuffle(deck)
 
+# Sort a player's hand so wildcards are first, then increasing rank order
 def sort(hand):
     tempHand = []
     secondTempHand = []
@@ -120,6 +124,7 @@ def sort(hand):
     finalHand = wilds + secondTempHand + tens + jackQueens + kings + aces
     return finalHand
 
+# Sort a player's field in rank order
 def sortField(field):
     ranks = []
     sortedField = {}
@@ -130,6 +135,8 @@ def sortField(field):
         sortedField[rank] = field[rank]
     return sortedField
 
+# Add one card from the deck to a player's hand
+# If the deck is empty, return 'end' to end the hand
 def draw(hand, field, numDraws):
     for i in range(numDraws):
         if len(deck) == 0:
@@ -147,6 +154,7 @@ def draw(hand, field, numDraws):
             hand.append(card)
         # hand = sort(hand)
 
+# Deal each player a hand of 15 cards
 def dealHands():
     for i in range(15):
         global playerHand
@@ -157,6 +165,8 @@ def dealHands():
         compHand = sort(compHand)
     discard.append(deck.pop(random.randint(0, len(deck)-1)))
 
+# Return the number of cards with a certain rank in a player's hand
+# Ex - returns 3 if the computer has 3 5's in its hand
 def countNumRank(rank, hand):
     ct = 0
     for card in hand:
@@ -164,6 +174,7 @@ def countNumRank(rank, hand):
             ct += 1
     return ct
 
+# Return the number of wild cards in any list - either a player's hand or a specific part of a player's field
 def countNumWC(list):
     wildCount = 0
     for card in list:
@@ -171,12 +182,14 @@ def countNumWC(list):
                 wildCount += 1
     return wildCount
 
+# Return true if a player has a canasta - false otherwise
 def hasCanasta(field):
     for rank in field.keys():
         if len(field[rank]) >= 7:
             return True
     return False
 
+# Return ture if a player can go out (either by having a canasta or by being able to make one) - false otherwise
 def canGoOut(hand, field):
     if hasCanasta(field):
         return True
@@ -200,6 +213,7 @@ def canGoOut(hand, field):
                 return True
     return False
 
+# Return the total value of cards on a player's field
 def calcValueField(field):
     score = 0
     for rank in field.keys():
@@ -221,6 +235,7 @@ def calcValueField(field):
                     score += 300
     return score
 
+# Return the total value of cards on a player's field excluding the points given by red 3's
 def calcValueFieldNoThrees(field):
     score = 0
     for rank in field.keys():
@@ -229,39 +244,46 @@ def calcValueFieldNoThrees(field):
                 score += refScores[card[0]]
     return score
 
+# Return the total value of cards in a player's hand
 def calcValueHand(hand):
     score = 0
     for card in hand:
         score += refScores[card[0]]
     return score
 
+# Print the socre of the game: Current score + points on field - points in hand
 def printScore():
     print("Score")
     print("Player 1: " + str(playerScore) + " + " + str(calcValueField(playerField)) + " - " + str(calcValueHand(playerHand)))
     print("Computer: " + str(compScore) + " + " + str(calcValueField(compField)) + " - " + str(calcValueHand(compHand)))
 
+# If the player fails to play correctly, return the appropriate cards back to their hand
 def retToHand(toPlay, hand):
     for rank in list(toPlay.keys()):
         for card in list(toPlay[rank]):
             hand.append(card)
             toPlay[rank].remove(card)
     sort(hand)
-            
+
+# Return true if a string has a non-numeric character - false otherwise
 def hasLetter(string):
     for char in string:
         if char < '0' or char > '9':
             return True
     return False
 
+# Set isPlayerTurnOne to false after the player has made their first move of a hand
 def setPlayerTurn():
     isPlayerTurnOne = False
 
+# Return true if a player's field only has red 3's - false otherwise
 def onlyRedThrees(field):
     for rank in field.keys():
         if not rank == "3R" and len(field[rank]) > 0:
             return False
     return True    
 
+# Print the score, both players' hands, both player's fields, and the discard pile
 def printField():
     # print("Deck:\n", deck)
     global playerField
@@ -277,12 +299,14 @@ def printField():
     print("Computer Field:\n", compField)
     print("\n")
 
+# Return true if the discard pile is frozen - false otherwise
 def checkFrozen():
     for card in discard:
         if card[0] == "2" or card[0] == 'O' or card == "3D" or card == "3H":
             return True
     return False
 
+# Return true if a player only has black 3's in their hand - false otherwise
 def checkOnlyBlackThrees(hand):
     ct = 0
     for card in hand:
@@ -292,6 +316,8 @@ def checkOnlyBlackThrees(hand):
         return False
     return True
 
+# Function for player to play cards from their hand
+# Player must meet a specific minimum point value or cards will be return to their hand
 def playCards(pickedUp, scoreToBeat):
     global isPlayerTurnOne
     global playerField
@@ -459,6 +485,8 @@ def playCards(pickedUp, scoreToBeat):
         print("I'm sorry, that is not a valid action, type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the pile.")
         return "cont"
 
+# Function for player's turn
+# Will loop through options until player discards
 def playerTurn():
     global isPlayerTurnOne
     global playerHand
@@ -972,6 +1000,7 @@ def playerTurn():
         else:
             print("I'm sorry, that is not a valid action, type 'P' to play cards from your hand or 'C' to discard and end your turn.")
 
+# Return the number of copies of a rank that the computer has seen the player have
 def knownNumCopies(rank):
     global playerField
     global knownPlayerCards
@@ -982,6 +1011,7 @@ def knownNumCopies(rank):
     numOnField += knownPlayerCards[rank]
     return numOnField
 
+# Return the number of copies of a rank that the computer has seen anyone have
 def numSeen(rank):
     count = 0
     if rank in compField.keys():
@@ -1001,7 +1031,9 @@ def numSeen(rank):
         if card[0] == rank:
              count += 1
     return count
-            
+
+# Discards one card from the computer's hand to end its turn
+# Includes significant canasta logic       
 def compDiscard():
     global compHand
     global playerField
@@ -1093,6 +1125,7 @@ def compDiscard():
             ind = compHand.index(card)
     discard.append(compHand.pop(ind))
 
+# Old function for discarding a card - replaced by compDiscard
 def discardNoCopy():
     global compHand
     global playerField
@@ -1145,6 +1178,7 @@ def discardNoCopy():
             ind = compHand.index(card)
     discard.append(compHand.pop(ind))
 
+# Function for the computer to play cards of which it has 3 or more copies
 def playThree():
     canPlay = []
     canPlayWithWild = []
@@ -1194,7 +1228,8 @@ def playThree():
             compHand.remove(card)
         compField[canPlayWithWild[(-1)*(i+1)]] = toPlay
         i+=1
-        
+
+# Return true if computer can make minimum point value for first play - false otherwise
 def canMakeFirstPlay():
     canPlay = []
     canPlayLengths = []
@@ -1279,12 +1314,15 @@ def canMakeFirstPlay():
     #         return True
     return False
 
+# Return true if computer successfully made minimum point value for first play - false otherwise
 def madeFirstPlay():
     score = calcValueFieldNoThrees(compField)
     if (compScore < 1500 and score >= 50) or (compScore < 3000 and compScore >= 1500 and score >= 90) or (compScore < 5000 and compScore >= 3000 and score >= 120):
         return True
     return False
-    
+
+# Function for the computer to play any wild cards in its hand
+# Plays wilds on longest canasta 
 def playWilds():
     global compHand
     global compField
@@ -1313,6 +1351,7 @@ def playWilds():
         for card in toRemoveCard[rank]:
             compHand.remove(card)
 
+# Function for computer to play any single cards in its hand that match existing canastas on its board
 def playSingles():
     toPlay = []
     for card in compHand:
@@ -1324,6 +1363,7 @@ def playSingles():
     for card in toPlay:
         compField[card[0]].append(compHand.pop(compHand.index(card)))
 
+# Returns false if computer would gain advantage from not playing a card - true otherwise
 def shouldPlay():
     global isFrozen
     if isFrozen and canGoOut(compHand, compField):
@@ -1340,7 +1380,10 @@ def shouldPlay():
             return False
     return True
 
+# Returns true if computer can pick up the discard pile - false otherwise
 def canPickUpDiscard():
+    if hasCanasta(compField) and calcValueField(compField) > calcValueField(playerField) and len(discard) <= 2:
+        return False
     toPickUp = discard[-1]
     if toPickUp[0] == '3' or toPickUp[0] == '2' or toPickUp[0] == 'O':
         return False
@@ -1354,6 +1397,7 @@ def canPickUpDiscard():
             return True
     return False
 
+# Picks up the discard pile for the computer and plays the appropriate card(s)
 def pickUpDiscard():
     pickedUp = discard.pop(-1)
     toPlay = {}
@@ -1384,22 +1428,46 @@ def pickUpDiscard():
     sort(compHand)
     sortField(compField)
     discard.clear()
-   
+
+# Returns true if the computer should freeze the discard pile - false otherwise
+def checkToFreeze():
+    if hasCanasta(playerField):
+        return False
+    if len(playerHand) <= 5 and len(playerHand) < len(compHand):
+        return True
+    return False
+
+# Discards a wildcard to freeze the discard pile
+def freeze():
+    for card in compHand:
+        if card[0] == '2':
+            discard.append(card)
+            compHand.remove(card)
+            return True
+    for card in compHand:
+        if card[0] == 'O':
+            discard.append(card)
+            compHand.remove(card)
+            return True
+    return False
+
+# Function for computer turn
+# Prioritizes getting a canasta then getting as many points as possible and going out swiftly
 def compTurn():
     global compHand
     global isFrozen
     global isCompTurnOne
-    isFrozen = checkFrozen()
-    print(canPickUpDiscard())
+    # print(canPickUpDiscard())
     if not isCompTurnOne and canPickUpDiscard():
         pickUpDiscard()
     else:
         test = draw(compHand, compField, 2)
         if test == "end":
             return
+    isFrozen = checkFrozen()
     compHand = sort(compHand)
     if isCompTurnOne:
-        print(canMakeFirstPlay())
+        # print(canMakeFirstPlay())
         if canMakeFirstPlay():
             playThree()
         if not madeFirstPlay():
@@ -1408,6 +1476,9 @@ def compTurn():
         else:
             isCompTurnOne = False
     else:
+        if checkToFreeze():
+            if freeze():
+                return
         if shouldPlay():
             if not hasCanasta(compField):
                 playSingles()
@@ -1421,7 +1492,8 @@ def compTurn():
 
 
     # discard.append(compHand.pop(random.randint(0, len(compHand)-1)))
-        
+
+# Function to change the score of a game after a hand as finished
 def setScore(num, player):
     global playerScore
     global compScore
@@ -1430,6 +1502,7 @@ def setScore(num, player):
     else:
         playerScore = num
 
+# Runs the appropriate functions for a hand and for the game in general
 def main():
     createLists()
     buildLibrary()
@@ -1488,1423 +1561,3 @@ def main():
     else: print("The player won!")
 
 main()
-
-# def playerTurn():
-#     global isPlayerTurnOne
-#     global playerHand
-#     global compHand
-#     global isFrozen
-#     isFrozen = checkFrozen()
-#     printField()
-#     print("It is the player's turn, type 'D' to draw two cards or 'U' to pick up the discard pile.")
-#     do = True
-#     while do:
-#         action = input().upper()
-#         if action == "Draw" or action == "D" or action == "d":
-#             test = draw(playerHand, playerField, 2)
-#             if test == "end":
-#                 return
-#             playerHand = sort(playerHand)
-#             do = False
-#             printField()
-#         elif action == "U" or action =="u":
-#             pickedUp = discard.pop(-1)
-#             if pickedUp[0] == '2' or pickedUp[0] == 'O' or pickedUp[0] == '3':
-#                 print("I'm sorry, but you cannot pick up that card.  Please type 'D' to draw instead.")
-#                 discard.append(pickedUp)
-#                 continue
-#             elif pickedUp[0] in playerField.keys() and not isFrozen:
-#                 playerHand.append(pickedUp)
-#                 if len(playerHand) == 1 and len(discard) == 0 and not canGoOut(playerHand, playerField):
-#                     print("I'm sorry, you cannot go out because you do not have a canasta.  Please draw instead.")
-#                     playerHand.pop(-1)
-#                     discard.append(pickedUp)
-#                 else:
-#                     playerField[pickedUp[0]].append(pickedUp)
-#                     playerHand.pop(-1)
-#                     for card in discard:
-#                         # if card == pickedUp:
-#                         #     continue
-#                         if card == "3D" or card == "3H":
-#                             if '3R' not in playerField.keys():
-#                                 playerField['3R'] = [card]
-#                             else:
-#                                 playerField['3R'].append(card)
-#                             continue
-#                         playerHand.append(card)
-#                     playerHand = sort(playerHand)
-#                     discard.clear()
-#                     do = False
-#             elif not isFrozen and countNumRank(pickedUp[0], playerHand) + countNumWC(playerHand) >= 2 and countNumRank(pickedUp[0], playerHand) >= 1:
-#                 if len(playerHand) - 2 + len(discard) <= 1 and not canGoOut(playerHand, playerField):
-#                     print("I'm sorry, you cannot go out because you do not have a canasta.  Please draw instead.")
-#                     discard.append(pickedUp)
-#                 else:
-#                     numToPlay = 2
-#                     action = ""
-#                     toPlay = {}
-#                     toPlay[pickedUp[0]] = []
-#                     i = 0
-#                     # needBreak = False
-#                     while i < numToPlay:
-#                         if not do:
-#                             break
-#                         if not i==0:
-#                             printField()
-#                             print("Please enter the next card.")
-#                         else:
-#                             printField()
-#                             print("Enter the symbol (e.g., 'AC') of the first card you would like to play alongside the card you picked up.  Type 'E' to exit.")
-#                         i += 1
-#                         # if needBreak:
-#                         #     do = True
-#                         #     break
-#                         do = True
-#                         while do:
-#                             action = input().upper()
-#                             print(action)
-#                             if action == "E" or action == "e":
-#                                 do = False
-#                                 # discard.append(pickedUp)
-#                                 for card in toPlay[list(toPlay.keys())[0]]:
-#                                     playerHand.append(card)
-#                                 playerHand = sort(playerHand)
-#                                 toPlay.clear()
-#                                 printField()
-#                                 print("It is the player's turn, type 'D' to draw two cards or 'U' to pick up the discard pile.")
-#                             elif action not in playerHand:
-#                                 print("I'm sorry, that card is not in the player's hand, choose a different card.")
-#                             else:
-#                                 if not action[0] == list(toPlay.keys())[0] and not action[0] == 'O' and not action[0] == '2':
-#                                     print("I'm sorry, that card cannot be played on this rank of canasta.  Choose a different card.")
-#                                 else:
-#                                     toPlay[list(toPlay.keys())[0]].append(action)
-#                                     playerHand.remove(action)
-#                                     do=False
-#                         do=True
-#                         if action == "E" or action == "e":
-#                             retToHand(toPlay, playerHand)
-#                             playerHand = sort(playerHand)
-#                             discard.append(pickedUp)
-#                             break
-#                     if not action == "E" and not action == "e":
-#                         if list(toPlay.keys())[0] not in playerField.keys():
-#                             if countNumWC(toPlay[list(toPlay.keys())[0]]) > len(toPlay[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]):
-#                                 retToHand(toPlay, playerHand)
-#                                 playerHand = sort(playerHand)
-#                                 discard.append(pickedUp)
-#                                 printField()
-#                                 print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand or the discard pile.")
-#                                 print("It is the player's turn, type 'D' to draw two cards or 'U' to pick up the discard pile.")
-#                                 continue
-#                             else:
-#                                 playerField[list(toPlay.keys())[0]] = toPlay[list(toPlay.keys())[0]]
-#                                 playerField[list(toPlay.keys())[0]].append(pickedUp)
-#                         else:
-#                             for card in toPlay[list(toPlay.keys())[0]]:
-#                                 playerField[list(toPlay.keys())[0]].append(card)
-#                             playerField[list(toPlay.keys())[0]].append(pickedUp)
-                            
-#                         printField()
-#                         # print("Type 'P' to play cards from your hand or 'C' to discard and end your turn.")
-#                         do = False
-#                     elif action == "E":
-#                         # printField()
-#                         continue
-#                     count = 0
-#                     while isPlayerTurnOne:
-#                         score = calcValueFieldNoThrees(playerField)
-#                         if count == 0:
-#                             count += 1
-#                             if playerScore < 1500 and score < 50:
-#                                 print("You need to play a total of 50 points to pick up the rest of the discard pile.")
-#                                 print("Type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the discard pile (all cards will be returned to the correct location).")
-#                             elif playerScore >= 1500 and playerScore <3000 and score < 90:
-#                                 print("You need to play a total of 90 points to pick up the rest of the discard pile.")
-#                                 print("Type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the discard pile (all cards will be returned to the correct location).")
-#                             elif playerScore >= 3000 and score < 120:
-#                                 print("You need to play a total of 120 points to pick up the rest of the discard pile.")
-#                                 print("Type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the discard pile (all cards will be returned to the correct location).")
-#                         if (playerScore < 1500 and score < 50):
-#                             action = playCards(pickedUp, scoreToBeat = 50)
-#                             if action == "end":
-#                                 return
-#                             elif action == "br":
-#                                 break
-#                             elif action == "cont":
-#                                 continue
-#                             # action = input().upper()
-#                             # do=True
-#                             # if action == "Play" or action == "P" or action == "p":
-#                             #     printField()
-#                             #     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #     while do:
-#                             #         action = input().upper()
-#                             #         if (action == 'E' or action == "e") and not isPlayerTurnOne:
-#                             #             ct = 0
-#                             #             for card in playerField[list(toPlay.keys())[0]]:
-#                             #                 if card == pickedUp and ct < 1:
-#                             #                     discard.append(card)
-#                             #                     ct += 1
-#                             #                 else:
-#                             #                     playerHand.append(card)
-#                             #             del playerField[list(toPlay.keys())[0]]
-#                             #             printField()
-#                             #             print("Type 'D' to draw or 'U' to pick up the discard pile.")
-#                             #             break
-#                             #         elif action  == "E":
-#                             #             printField()
-#                             #             break
-#                             #         elif hasLetter(action):
-#                             #             print("I'm sorry, your input was not a number.  Please enter a number.")
-#                             #         elif (not int(action) > 0 or not int(action) <= len(playerHand)):
-#                             #             print("I'm sorry, you cannot play that many cards.  Please enter a different number.")
-#                             #         elif len(playerHand) - int(action) <= 1 and not canGoOut(playerHand, playerField):
-#                             #             print("I'm sorry, you cannot go out because you do not have a canasta.  Please enter a different number.")
-#                             #         else:
-#                             #             numToPlay = int(action)
-#                             #             toPlay = {}
-#                             #             i = 0
-#                             #             needBreak = False
-#                             #             while i < numToPlay:
-#                             #                 if not do:
-#                             #                     break
-#                             #                 if not i==0:
-#                             #                     printField()
-#                             #                     print("Please enter the next card.")
-#                             #                 else:
-#                             #                     printField()
-#                             #                     print("Enter the rank of the canasta you would like to play on. Type 'E' to exit.")
-#                             #                     while do:
-#                             #                         action = input().upper()
-#                             #                         printField()
-#                             #                         if action == "E" or action == "e":
-#                             #                             do = False
-#                             #                             needBreak = True
-#                             #                             print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         elif len(action) > 1 or (not action == "J" and not action == "Q" and not action == "K" and not action == "O" and not action == "A" and not action == '0' and (not action > '2' or not action <= '9')):
-#                             #                             print("I'm sorry, that is not a legal rank.  Please choose a different rank.")
-#                             #                         else:
-#                             #                             if action not in playerField.keys() and numToPlay < 3:                                            
-#                             #                                 print("Note, you need to play more cards to start this canasta.  Number of cards to play automatically increased to 3.  If you cannot play 3 cards, type 'E' to exit.")
-#                             #                                 numToPlay = 3
-#                             #                             toPlay[action] = []
-#                             #                             do = False
-#                             #                             print("Enter the symbol (e.g., 'AC') of one of the cards you would like to play. Type 'E' to exit.")
-#                             #                 i += 1
-#                             #                 if needBreak:
-#                             #                     do = True
-#                             #                     break
-#                             #                 do = True
-#                             #                 while do:
-#                             #                     action = input().upper()
-#                             #                     if action == "E" or action == "e":
-#                             #                         do = False
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     elif action not in playerHand:
-#                             #                         print("I'm sorry, that card is not in the player's hand, choose a different card.")
-#                             #                     else:
-#                             #                         if not action[0] == list(toPlay.keys())[0] and not action[0] == 'O' and not action[0] == '2':
-#                             #                             print("I'm sorry, that card cannot be played on this rank of canasta.  Choose a different card.")
-#                             #                         else:
-#                             #                             toPlay[list(toPlay.keys())[0]].append(action)
-#                             #                             playerHand.remove(action)
-#                             #                             do=False
-#                             #                 do=True
-#                             #                 if action == "E" or action == "e":
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     break
-#                             #             if not action == "E" and not action == "e":
-#                             #                 if list(toPlay.keys())[0] not in playerField.keys():
-#                             #                     if countNumWC(toPlay[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]):
-#                             #                         retToHand(toPlay, playerHand)
-#                             #                         playerHand = sort(playerHand)
-#                             #                         discard.append(pickedUp)
-#                             #                         printField()
-#                             #                         print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         continue
-#                             #                     else:
-#                             #                         playerField[list(toPlay.keys())[0]] = toPlay[list(toPlay.keys())[0]]
-#                             #                 elif countNumWC(toPlay[list(toPlay.keys())[0]]) + countNumWC(playerField[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) + len(playerField[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]) - countNumWC(playerField[list(toPlay.keys())[0]]):
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     printField()
-#                             #                     print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     continue
-#                             #                 else:
-#                             #                     for card in toPlay[list(toPlay.keys())[0]]:
-#                             #                         playerField[list(toPlay.keys())[0]].append(card)
-#                                             # score = calcValueFieldNoThrees(playerField)
-#                                             # if score >= 50:
-#                                             #     for card in discard:
-#                                             #         # if card == pickedUp:
-#                                             #         #     continue  
-#                                             #         if card == "3D" or card == "3H":
-#                                             #             if '3R' not in playerField.keys():
-#                                             #                 playerField['3R'] = [card]
-#                                             #             else:
-#                                             #                 playerField['3R'].append(card)
-#                                             #             continue
-#                                             #         playerHand.append(card)
-#                                             #     discard.clear()
-#                                             #     playerHand = sort(playerHand)
-#                                             #     # setPlayerTurn()
-#                                             #     isPlayerTurnOne = False
-#                                             #     do = False
-#                                             # printField()
-#                                             # if len(playerHand) == 0:
-#                                             #     do = False
-#                                             #     break
-#                                             # print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             # elif action == "D":
-#                             #     test = draw(playerHand, playerField, 2)
-#                             #     if test == "end":
-#                             #         return
-#                             #     playerHand = sort(playerHand)
-#                             #     ct = 0
-#                             #     print(toPlay)
-#                             #     for card in playerField[list(toPlay.keys())[0]]:
-#                             #         if card == pickedUp and ct < 1:
-#                             #             discard.append(card)
-#                             #             ct += 1
-#                             #         else:
-#                             #             playerHand.append(card)
-#                             #     del playerField[list(toPlay.keys())[0]]
-#                             #     # printField()
-#                             #     do = False
-#                             #     action = "E"
-#                             #     playerHand = sort(playerHand)
-#                             #     printField()
-#                             #     break
-#                             # else:
-#                             #     print("I'm sorry, that is not a valid action, type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the pile.")
-#                             #     continue
-#                         elif playerScore >= 1500 and playerScore < 3000 and score < 90:
-#                             # print("You need to play a total of 90 points to pick up the rest of the discard pile.")
-#                             # print("Type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the discard pile (all cards will be returned to the correct location).")
-#                             action = playCards(pickedUp, scoreToBeat = 90)
-#                             if action == "end":
-#                                 return
-#                             elif action == "br":
-#                                 break
-#                             elif action == "cont":
-#                                 continue
-                            
-#                             # action = input().upper()
-#                             # do=True
-#                             # if action == "Play" or action == "P" or action == "p":
-#                             #     printField()
-#                             #     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #     while do:
-#                             #         action = input().upper()
-#                             #         if (action == 'E' or action == "e") and not isPlayerTurnOne:
-#                             #             ct = 0
-#                             #             for card in playerField[list(toPlay.keys())[0]]:
-#                             #                 if card == pickedUp and ct < 1:
-#                             #                     discard.append(card)
-#                             #                     ct += 1
-#                             #                 else:
-#                             #                     playerHand.append(card)
-#                             #             del playerField[list(toPlay.keys())[0]]
-#                             #             printField()
-#                             #             print("Type 'D' to draw or 'U' to pick up the discard pile.")
-#                             #             break
-#                             #         elif action  == "E":
-#                             #             printField()
-#                             #             break
-#                             #         elif hasLetter(action):
-#                             #             print("I'm sorry, your input was not a number.  Please enter a number.")
-#                             #         elif (not int(action) > 0 or not int(action) <= len(playerHand)):
-#                             #             print("I'm sorry, you cannot play that many cards.  Please enter a different number.")
-#                             #         elif len(playerHand) - int(action) <= 1 and not canGoOut(playerHand, playerField):
-#                             #             print("I'm sorry, you cannot go out because you do not have a canasta.  Please enter a different number.")
-#                             #         else:
-#                             #             numToPlay = int(action)
-#                             #             toPlay = {}
-#                             #             i = 0
-#                             #             needBreak = False
-#                             #             while i < numToPlay:
-#                             #                 if not do:
-#                             #                     break
-#                             #                 if not i==0:
-#                             #                     printField()
-#                             #                     print("Please enter the next card.")
-#                             #                 else:
-#                             #                     printField()
-#                             #                     print("Enter the rank of the canasta you would like to play on. Type 'E' to exit.")
-#                             #                     while do:
-#                             #                         action = input().upper()
-#                             #                         printField()
-#                             #                         if action == "E" or action == "e":
-#                             #                             do = False
-#                             #                             needBreak = True
-#                             #                             print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         elif len(action) > 1 or (not action == "J" and not action == "Q" and not action == "K" and not action == "O" and not action == "A" and not action == '0' and (not action > '2' or not action <= '9')):
-#                             #                             print("I'm sorry, that is not a legal rank.  Please choose a different rank.")
-#                             #                         else:
-#                             #                             if action not in playerField.keys() and numToPlay < 3:                                            
-#                             #                                 print("Note, you need to play more cards to start this canasta.  Number of cards to play automatically increased to 3.  If you cannot play 3 cards, type 'E' to exit.")
-#                             #                                 numToPlay = 3
-#                             #                             toPlay[action] = []
-#                             #                             do = False
-#                             #                             print("Enter the symbol (e.g., 'AC') of one of the cards you would like to play. Type 'E' to exit.")
-#                             #                 i += 1
-#                             #                 if needBreak:
-#                             #                     do = True
-#                             #                     break
-#                             #                 do = True
-#                             #                 while do:
-#                             #                     action = input().upper()
-#                             #                     if action == "E" or action == "e":
-#                             #                         do = False
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     elif action not in playerHand:
-#                             #                         print("I'm sorry, that card is not in the player's hand, choose a different card.")
-#                             #                     else:
-#                             #                         if not action[0] == list(toPlay.keys())[0] and not action[0] == 'O' and not action[0] == '2':
-#                             #                             print("I'm sorry, that card cannot be played on this rank of canasta.  Choose a different card.")
-#                             #                         else:
-#                             #                             toPlay[list(toPlay.keys())[0]].append(action)
-#                             #                             playerHand.remove(action)
-#                             #                             do=False
-#                             #                 do=True
-#                             #                 if action == "E" or action == "e":
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     break
-#                             #             if not action == "E" and not action == "e":
-#                             #                 if list(toPlay.keys())[0] not in playerField.keys():
-#                             #                     if countNumWC(toPlay[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]):
-#                             #                         retToHand(toPlay, playerHand)
-#                             #                         playerHand = sort(playerHand)
-#                             #                         discard.append(pickedUp)
-#                             #                         printField()
-#                             #                         print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         continue
-#                             #                     else:
-#                             #                         playerField[list(toPlay.keys())[0]] = toPlay[list(toPlay.keys())[0]]
-#                             #                 elif countNumWC(toPlay[list(toPlay.keys())[0]]) + countNumWC(playerField[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) + len(playerField[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]) - countNumWC(playerField[list(toPlay.keys())[0]]):
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     printField()
-#                             #                     print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     continue
-#                             #                 else:
-#                             #                     for card in toPlay[list(toPlay.keys())[0]]:
-#                             #                         playerField[list(toPlay.keys())[0]].append(card)
-#                             #                 score = calcValueFieldNoThrees(playerField)
-#                             #                 if score >= 90:
-#                             #                     for card in discard:
-#                             #                         # if card == pickedUp:
-#                             #                         #     continue  
-#                             #                         if card == "3D" or card == "3H":
-#                             #                             if '3R' not in playerField.keys():
-#                             #                                 playerField['3R'] = [card]
-#                             #                             else:
-#                             #                                 playerField['3R'].append(card)
-#                             #                             continue
-#                             #                         playerHand.append(card)
-#                             #                     discard.clear()
-#                             #                     playerHand = sort(playerHand)
-#                             #                     # setPlayerTurn()
-#                             #                     isPlayerTurnOne = False
-#                             #                     do = False
-#                             #                 printField()
-#                             #                 if len(playerHand) == 0:
-#                             #                     do = False
-#                             #                     break
-#                             #                 print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             # elif action == "D":
-#                             #     test = draw(playerHand, playerField, 2)
-#                             #     if test == "end":
-#                             #         return
-#                             #     playerHand = sort(playerHand)
-#                             #     ct = 0
-#                             #     print(toPlay)
-#                             #     for card in playerField[list(toPlay.keys())[0]]:
-#                             #         if card == pickedUp and ct < 1:
-#                             #             discard.append(card)
-#                             #             ct += 1
-#                             #         else:
-#                             #             playerHand.append(card)
-#                             #     del playerField[list(toPlay.keys())[0]]
-#                             #     # printField()
-#                             #     do = False
-#                             #     action = "E"
-#                             #     playerHand = sort(playerHand)
-#                             #     printField()
-#                             #     break
-#                             # else:
-#                             #     print("I'm sorry, that is not a valid action, type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the pile.")
-#                             #     continue
-#                         elif playerScore >= 3000 and score < 120:
-#                             action = playCards(pickedUp, scoreToBeat = 120)
-#                             if action == "end":
-#                                 return
-#                             elif action == "br":
-#                                 break
-#                             elif action == "cont":
-#                                 continue
-                            
-#                             # action = input().upper()
-#                             # do=True
-#                             # if action == "Play" or action == "P" or action == "p":
-#                             #     printField()
-#                             #     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #     while do:
-#                             #         action = input().upper()
-#                             #         if (action == 'E' or action == "e") and not isPlayerTurnOne:
-#                             #             ct = 0
-#                             #             for card in playerField[list(toPlay.keys())[0]]:
-#                             #                 if card == pickedUp and ct < 1:
-#                             #                     discard.append(card)
-#                             #                     ct += 1
-#                             #                 else:
-#                             #                     playerHand.append(card)
-#                             #             del playerField[list(toPlay.keys())[0]]
-#                             #             printField()
-#                             #             print("Type 'D' to draw or 'U' to pick up the discard pile.")
-#                             #             break
-#                             #         elif action  == "E":
-#                             #             printField()
-#                             #             break
-#                             #         elif hasLetter(action):
-#                             #             print("I'm sorry, your input was not a number.  Please enter a number.")
-#                             #         elif (not int(action) > 0 or not int(action) <= len(playerHand)):
-#                             #             print("I'm sorry, you cannot play that many cards.  Please enter a different number.")
-#                             #         elif len(playerHand) - int(action) <= 1 and not canGoOut(playerHand, playerField):
-#                             #             print("I'm sorry, you cannot go out because you do not have a canasta.  Please enter a different number.")
-#                             #         else:
-#                             #             numToPlay = int(action)
-#                             #             toPlay = {}
-#                             #             i = 0
-#                             #             needBreak = False
-#                             #             while i < numToPlay:
-#                             #                 if not do:
-#                             #                     break
-#                             #                 if not i==0:
-#                             #                     printField()
-#                             #                     print("Please enter the next card.")
-#                             #                 else:
-#                             #                     printField()
-#                             #                     print("Enter the rank of the canasta you would like to play on. Type 'E' to exit.")
-#                             #                     while do:
-#                             #                         action = input().upper()
-#                             #                         printField()
-#                             #                         if action == "E" or action == "e":
-#                             #                             do = False
-#                             #                             needBreak = True
-#                             #                             print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         elif len(action) > 1 or (not action == "J" and not action == "Q" and not action == "K" and not action == "O" and not action == "A" and not action == '0' and (not action > '2' or not action <= '9')):
-#                             #                             print("I'm sorry, that is not a legal rank.  Please choose a different rank.")
-#                             #                         else:
-#                             #                             if action not in playerField.keys() and numToPlay < 3:                                            
-#                             #                                 print("Note, you need to play more cards to start this canasta.  Number of cards to play automatically increased to 3.  If you cannot play 3 cards, type 'E' to exit.")
-#                             #                                 numToPlay = 3
-#                             #                             toPlay[action] = []
-#                             #                             do = False
-#                             #                             print("Enter the symbol (e.g., 'AC') of one of the cards you would like to play. Type 'E' to exit.")
-#                             #                 i += 1
-#                             #                 if needBreak:
-#                             #                     do = True
-#                             #                     break
-#                             #                 do = True
-#                             #                 while do:
-#                             #                     action = input().upper()
-#                             #                     if action == "E" or action == "e":
-#                             #                         do = False
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     elif action not in playerHand:
-#                             #                         print("I'm sorry, that card is not in the player's hand, choose a different card.")
-#                             #                     else:
-#                             #                         if not action[0] == list(toPlay.keys())[0] and not action[0] == 'O' and not action[0] == '2':
-#                             #                             print("I'm sorry, that card cannot be played on this rank of canasta.  Choose a different card.")
-#                             #                         else:
-#                             #                             toPlay[list(toPlay.keys())[0]].append(action)
-#                             #                             playerHand.remove(action)
-#                             #                             do=False
-#                             #                 do=True
-#                             #                 if action == "E" or action == "e":
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     break
-#                             #             if not action == "E" and not action == "e":
-#                             #                 if list(toPlay.keys())[0] not in playerField.keys():
-#                             #                     if countNumWC(toPlay[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]):
-#                             #                         retToHand(toPlay, playerHand)
-#                             #                         playerHand = sort(playerHand)
-#                             #                         discard.append(pickedUp)
-#                             #                         printField()
-#                             #                         print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         continue
-#                             #                     else:
-#                             #                         playerField[list(toPlay.keys())[0]] = toPlay[list(toPlay.keys())[0]]
-#                             #                 elif countNumWC(toPlay[list(toPlay.keys())[0]]) + countNumWC(playerField[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) + len(playerField[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]) - countNumWC(playerField[list(toPlay.keys())[0]]):
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     printField()
-#                             #                     print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     continue
-#                             #                 else:
-#                             #                     for card in toPlay[list(toPlay.keys())[0]]:
-#                             #                         playerField[list(toPlay.keys())[0]].append(card)
-#                             #                 score = calcValueFieldNoThrees(playerField)
-#                             #                 if score >= 120:
-#                             #                     for card in discard:
-#                             #                         # if card == pickedUp:
-#                             #                         #     continue 
-#                             #                         if card == "3D" or card == "3H":
-#                             #                             if '3R' not in playerField.keys():
-#                             #                                 playerField['3R'] = [card]
-#                             #                             else:
-#                             #                                 playerField['3R'].append(card)
-#                             #                             continue 
-#                             #                         playerHand.append(card)
-#                             #                     discard.clear()
-#                             #                     playerHand = sort(playerHand)
-#                             #                     # setPlayerTurn()
-#                             #                     isPlayerTurnOne = False
-#                             #                     do = False
-#                             #                 printField()
-#                             #                 if len(playerHand) == 0:
-#                             #                     do = False
-#                             #                     break
-#                             #                 print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             # elif action == "D":
-#                             #     test = draw(playerHand, playerField, 2)
-#                             #     if test == "end":
-#                             #         return
-#                             #     playerHand = sort(playerHand)
-#                             #     ct = 0
-#                             #     print(toPlay)
-#                             #     for card in playerField[list(toPlay.keys())[0]]:
-#                             #         if card == pickedUp and ct < 1:
-#                             #             discard.append(card)
-#                             #             ct += 1
-#                             #         else:
-#                             #             playerHand.append(card)
-#                             #     del playerField[list(toPlay.keys())[0]]
-#                             #     # printField()
-#                             #     do = False
-#                             #     action = "E"
-#                             #     playerHand = sort(playerHand)
-#                             #     printField()
-#                             #     break
-#                             # else:
-#                             #     print("I'm sorry, that is not a valid action, type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the pile.")
-#                             #     continue
-#                         ct = 0
-#                         if action == 'E' and isPlayerTurnOne:
-#                             for card in playerField[list(toPlay.keys())[0]]:
-#                                 if card == pickedUp and ct < 1:
-#                                     discard.append(card)
-#                                     ct += 1
-#                                 else:
-#                                     playerHand.append(card)
-#                             del playerField[list(toPlay.keys())[0]]
-#                             print("Type 'D' to draw two cards or 'U' to pick up the discard pile.")
-#                             break
-#                         elif action == 'E':
-#                             do=False
-#                             break
-#                         setPlayerTurn()
-#                         do=False
-#                         break
-#                     if not action == 'E':
-#                         for card in discard:
-#                             # if card == pickedUp:
-#                             #     continue
-#                             if card == "3D" or card == "3H":
-#                                 if '3R' not in playerField.keys():
-#                                     playerField['3R'] = [card]
-#                                 else:
-#                                     playerField['3R'].append(card)
-#                                 continue
-#                             playerHand.append(card)
-#                         discard.clear()
-#                         playerHand = sort(playerHand)
-#                         printField()
-#             elif isFrozen and countNumRank(pickedUp[0], playerHand) >= 2:
-#                 if len(playerHand) - 2 + len(discard) <= 1 and not canGoOut(playerHand, playerField):
-#                     print("I'm sorry, you cannot go out because you do not have a canasta.  Please draw instead.")
-#                     discard.append(pickedUp)
-#                 else:
-#                     numToPlay = 2
-#                     action = ""
-#                     toPlay = {}
-#                     toPlay[pickedUp[0]] = []
-#                     i = 0
-#                     # needBreak = False
-#                     while i < numToPlay:
-#                         if not do:
-#                             break
-#                         if not i==0:
-#                             printField()
-#                             print("Please enter the next card.")
-#                         else:
-#                             printField()
-#                             print("Enter the symbol (e.g., 'AC') of the first card you would like to play alongside the card you picked up.  Type 'E' to exit.")
-#                         i += 1
-#                         # if needBreak:
-#                         #     do = True
-#                         #     break
-#                         do = True
-#                         while do:
-#                             action = input().upper()
-#                             print(action)
-#                             if action == "E" or action == "e":
-#                                 do = False
-#                                 # discard.append(pickedUp)
-#                                 for card in toPlay[list(toPlay.keys())[0]]:
-#                                     playerHand.append(card)
-#                                 playerHand = sort(playerHand)
-#                                 toPlay.clear()
-#                                 printField()
-#                                 print("It is the player's turn, type 'D' to draw two cards or 'U' to pick up the discard pile.")
-#                             elif action not in playerHand:
-#                                 print("I'm sorry, that card is not in the player's hand, choose a different card.")
-#                             else:
-#                                 if not action[0] == list(toPlay.keys())[0]:
-#                                     print("I'm sorry, that card cannot be played on this rank of canasta.  Choose a different card.")
-#                                 else:
-#                                     toPlay[list(toPlay.keys())[0]].append(action)
-#                                     playerHand.remove(action)
-#                                     do=False
-#                         do=True
-#                         if action == "E" or action == "e":
-#                             retToHand(toPlay, playerHand)
-#                             playerHand = sort(playerHand)
-#                             discard.append(pickedUp)
-#                             break
-#                     if not action == "E" and not action == "e":
-#                         if list(toPlay.keys())[0] not in playerField.keys():
-#                             if countNumWC(toPlay[list(toPlay.keys())[0]]) > len(toPlay[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]):
-#                                 retToHand(toPlay, playerHand)
-#                                 playerHand = sort(playerHand)
-#                                 discard.append(pickedUp)
-#                                 printField()
-#                                 print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand or the discard pile.")
-#                                 print("It is the player's turn, type 'D' to draw two cards or 'U' to pick up the discard pile.")
-#                                 continue
-#                             else:
-#                                 playerField[list(toPlay.keys())[0]] = toPlay[list(toPlay.keys())[0]]
-#                                 playerField[list(toPlay.keys())[0]].append(pickedUp)
-#                         else:
-#                             for card in toPlay[list(toPlay.keys())[0]]:
-#                                 playerField[list(toPlay.keys())[0]].append(card)
-#                             playerField[list(toPlay.keys())[0]].append(pickedUp)
-                            
-#                         printField()
-#                         # print("Type 'P' to play cards from your hand or 'C' to discard and end your turn.")
-#                         do = False
-#                     elif action == "E":
-#                         # printField()
-#                         continue
-#                     count = 0
-#                     while isPlayerTurnOne:
-#                         score = calcValueFieldNoThrees(playerField)
-#                         if count == 0:
-#                             count += 1
-#                             if playerScore < 1500 and score < 50:
-#                                 print("You need to play a total of 50 points to pick up the rest of the discard pile.")
-#                                 print("Type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the discard pile (all cards will be returned to the correct location).")
-#                             elif playerScore >= 1500 and playerScore <3000 and score < 90:
-#                                 print("You need to play a total of 90 points to pick up the rest of the discard pile.")
-#                                 print("Type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the discard pile (all cards will be returned to the correct location).")
-#                             elif playerScore >= 3000 and score < 120:
-#                                 print("You need to play a total of 120 points to pick up the rest of the discard pile.")
-#                                 print("Type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the discard pile (all cards will be returned to the correct location).")
-#                         if (playerScore < 1500 and score < 50):
-#                             action = playCards(pickedUp, scoreToBeat = 50)
-#                             if action == "end":
-#                                 return
-#                             elif action == "br":
-#                                 break
-#                             elif action == "cont":
-#                                 continue
-                            
-#                             # action = input().upper()
-#                             # do=True
-#                             # if action == "Play" or action == "P" or action == "p":
-#                             #     printField()
-#                             #     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #     while do:
-#                             #         action = input().upper()
-#                             #         if (action == 'E' or action == "e") and not isPlayerTurnOne:
-#                             #             ct = 0
-#                             #             for card in playerField[list(toPlay.keys())[0]]:
-#                             #                 if card == pickedUp and ct < 1:
-#                             #                     discard.append(card)
-#                             #                     ct += 1
-#                             #                 else:
-#                             #                     playerHand.append(card)
-#                             #             del playerField[list(toPlay.keys())[0]]
-#                             #             printField()
-#                             #             print("Type 'D' to draw or 'U' to pick up the discard pile.")
-#                             #             break
-#                             #         elif action  == "E":
-#                             #             printField()
-#                             #             break
-#                             #         elif hasLetter(action):
-#                             #             print("I'm sorry, your input was not a number.  Please enter a number.")
-#                             #         elif (not int(action) > 0 or not int(action) <= len(playerHand)):
-#                             #             print("I'm sorry, you cannot play that many cards.  Please enter a different number.")
-#                             #         elif len(playerHand) - int(action) <= 1 and not canGoOut(playerHand, playerField):
-#                             #             print("I'm sorry, you cannot go out because you do not have a canasta.  Please enter a different number.")
-#                             #         else:
-#                             #             numToPlay = int(action)
-#                             #             toPlay = {}
-#                             #             i = 0
-#                             #             needBreak = False
-#                             #             while i < numToPlay:
-#                             #                 if not do:
-#                             #                     break
-#                             #                 if not i==0:
-#                             #                     printField()
-#                             #                     print("Please enter the next card.")
-#                             #                 else:
-#                             #                     printField()
-#                             #                     print("Enter the rank of the canasta you would like to play on. Type 'E' to exit.")
-#                             #                     while do:
-#                             #                         action = input().upper()
-#                             #                         printField()
-#                             #                         if action == "E" or action == "e":
-#                             #                             do = False
-#                             #                             needBreak = True
-#                             #                             print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         elif len(action) > 1 or (not action == "J" and not action == "Q" and not action == "K" and not action == "O" and not action == "A" and not action == '0' and (not action > '2' or not action <= '9')):
-#                             #                             print("I'm sorry, that is not a legal rank.  Please choose a different rank.")
-#                             #                         else:
-#                             #                             if action not in playerField.keys() and numToPlay < 3:                                            
-#                             #                                 print("Note, you need to play more cards to start this canasta.  Number of cards to play automatically increased to 3.  If you cannot play 3 cards, type 'E' to exit.")
-#                             #                                 numToPlay = 3
-#                             #                             toPlay[action] = []
-#                             #                             do = False
-#                             #                             print("Enter the symbol (e.g., 'AC') of one of the cards you would like to play. Type 'E' to exit.")
-#                             #                 i += 1
-#                             #                 if needBreak:
-#                             #                     do = True
-#                             #                     break
-#                             #                 do = True
-#                             #                 while do:
-#                             #                     action = input().upper()
-#                             #                     if action == "E" or action == "e":
-#                             #                         do = False
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     elif action not in playerHand:
-#                             #                         print("I'm sorry, that card is not in the player's hand, choose a different card.")
-#                             #                     else:
-#                             #                         if not action[0] == list(toPlay.keys())[0] and not action[0] == 'O' and not action[0] == '2':
-#                             #                             print("I'm sorry, that card cannot be played on this rank of canasta.  Choose a different card.")
-#                             #                         else:
-#                             #                             toPlay[list(toPlay.keys())[0]].append(action)
-#                             #                             playerHand.remove(action)
-#                             #                             do=False
-#                             #                 do=True
-#                             #                 if action == "E" or action == "e":
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     break
-#                             #             if not action == "E" and not action == "e":
-#                             #                 if list(toPlay.keys())[0] not in playerField.keys():
-#                             #                     if countNumWC(toPlay[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]):
-#                             #                         retToHand(toPlay, playerHand)
-#                             #                         playerHand = sort(playerHand)
-#                             #                         discard.append(pickedUp)
-#                             #                         printField()
-#                             #                         print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         continue
-#                             #                     else:
-#                             #                         playerField[list(toPlay.keys())[0]] = toPlay[list(toPlay.keys())[0]]
-#                             #                 elif countNumWC(toPlay[list(toPlay.keys())[0]]) + countNumWC(playerField[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) + len(playerField[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]) - countNumWC(playerField[list(toPlay.keys())[0]]):
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     printField()
-#                             #                     print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     continue
-#                             #                 else:
-#                             #                     for card in toPlay[list(toPlay.keys())[0]]:
-#                             #                         playerField[list(toPlay.keys())[0]].append(card)
-#                             #                 score = calcValueFieldNoThrees(playerField)
-#                             #                 if score >= 50:
-#                             #                     for card in discard:
-#                             #                         # if card == pickedUp:
-#                             #                         #     continue
-#                             #                         if card == "3D" or card == "3H":
-#                             #                             if '3R' not in playerField.keys():
-#                             #                                 playerField['3R'] = [card]
-#                             #                             else:
-#                             #                                 playerField['3R'].append(card)
-#                             #                             continue  
-#                             #                         playerHand.append(card)
-#                             #                     discard.clear()
-#                             #                     playerHand = sort(playerHand)
-#                             #                     # setPlayerTurn()
-#                             #                     isPlayerTurnOne = False
-#                             #                     do = False
-#                             #                 printField()
-#                             #                 if len(playerHand) == 0:
-#                             #                     do = False
-#                             #                     break
-#                             #                 print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             # elif action == "D":
-#                             #     test = draw(playerHand, playerField, 2)
-#                             #     if test == "end":
-#                             #         return
-#                             #     playerHand = sort(playerHand)
-#                             #     ct = 0
-#                             #     print(toPlay)
-#                             #     for card in playerField[list(toPlay.keys())[0]]:
-#                             #         if card == pickedUp and ct < 1:
-#                             #             discard.append(card)
-#                             #             ct += 1
-#                             #         else:
-#                             #             playerHand.append(card)
-#                             #     del playerField[list(toPlay.keys())[0]]
-#                             #     # printField()
-#                             #     do = False
-#                             #     action = "E"
-#                             #     playerHand = sort(playerHand)
-#                             #     printField()
-#                             #     break
-#                             # else:
-#                             #     print("I'm sorry, that is not a valid action, type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the pile.")
-#                             #     continue
-#                         elif playerScore >= 1500 and playerScore < 3000 and score < 90:
-#                             # print("You need to play a total of 90 points to pick up the rest of the discard pile.")
-#                             # print("Type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the discard pile (all cards will be returned to the correct location).")
-#                             action = playCards(pickedUp, scoreToBeat = 90)
-#                             if action == "end":
-#                                 return
-#                             elif action == "br":
-#                                 break
-#                             elif action == "cont":
-#                                 continue
-                            
-#                             # action = input().upper()
-#                             # do=True
-#                             # if action == "Play" or action == "P" or action == "p":
-#                             #     printField()
-#                             #     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #     while do:
-#                             #         action = input().upper()
-#                             #         if (action == 'E' or action == "e") and not isPlayerTurnOne:
-#                             #             ct = 0
-#                             #             for card in playerField[list(toPlay.keys())[0]]:
-#                             #                 if card == pickedUp and ct < 1:
-#                             #                     discard.append(card)
-#                             #                     ct += 1
-#                             #                 else:
-#                             #                     playerHand.append(card)
-#                             #             del playerField[list(toPlay.keys())[0]]
-#                             #             printField()
-#                             #             print("Type 'D' to draw or 'U' to pick up the discard pile.")
-#                             #             break
-#                             #         elif action  == "E":
-#                             #             printField()
-#                             #             break
-#                             #         elif hasLetter(action):
-#                             #             print("I'm sorry, your input was not a number.  Please enter a number.")
-#                             #         elif (not int(action) > 0 or not int(action) <= len(playerHand)):
-#                             #             print("I'm sorry, you cannot play that many cards.  Please enter a different number.")
-#                             #         elif len(playerHand) - int(action) <= 1 and not canGoOut(playerHand, playerField):
-#                             #             print("I'm sorry, you cannot go out because you do not have a canasta.  Please enter a different number.")
-#                             #         else:
-#                             #             numToPlay = int(action)
-#                             #             toPlay = {}
-#                             #             i = 0
-#                             #             needBreak = False
-#                             #             while i < numToPlay:
-#                             #                 if not do:
-#                             #                     break
-#                             #                 if not i==0:
-#                             #                     printField()
-#                             #                     print("Please enter the next card.")
-#                             #                 else:
-#                             #                     printField()
-#                             #                     print("Enter the rank of the canasta you would like to play on. Type 'E' to exit.")
-#                             #                     while do:
-#                             #                         action = input().upper()
-#                             #                         printField()
-#                             #                         if action == "E" or action == "e":
-#                             #                             do = False
-#                             #                             needBreak = True
-#                             #                             print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         elif len(action) > 1 or (not action == "J" and not action == "Q" and not action == "K" and not action == "O" and not action == "A" and not action == '0' and (not action > '2' or not action <= '9')):
-#                             #                             print("I'm sorry, that is not a legal rank.  Please choose a different rank.")
-#                             #                         else:
-#                             #                             if action not in playerField.keys() and numToPlay < 3:                                            
-#                             #                                 print("Note, you need to play more cards to start this canasta.  Number of cards to play automatically increased to 3.  If you cannot play 3 cards, type 'E' to exit.")
-#                             #                                 numToPlay = 3
-#                             #                             toPlay[action] = []
-#                             #                             do = False
-#                             #                             print("Enter the symbol (e.g., 'AC') of one of the cards you would like to play. Type 'E' to exit.")
-#                             #                 i += 1
-#                             #                 if needBreak:
-#                             #                     do = True
-#                             #                     break
-#                             #                 do = True
-#                             #                 while do:
-#                             #                     action = input().upper()
-#                             #                     if action == "E" or action == "e":
-#                             #                         do = False
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     elif action not in playerHand:
-#                             #                         print("I'm sorry, that card is not in the player's hand, choose a different card.")
-#                             #                     else:
-#                             #                         if not action[0] == list(toPlay.keys())[0] and not action[0] == 'O' and not action[0] == '2':
-#                             #                             print("I'm sorry, that card cannot be played on this rank of canasta.  Choose a different card.")
-#                             #                         else:
-#                             #                             toPlay[list(toPlay.keys())[0]].append(action)
-#                             #                             playerHand.remove(action)
-#                             #                             do=False
-#                             #                 do=True
-#                             #                 if action == "E" or action == "e":
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     break
-#                             #             if not action == "E" and not action == "e":
-#                             #                 if list(toPlay.keys())[0] not in playerField.keys():
-#                             #                     if countNumWC(toPlay[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]):
-#                             #                         retToHand(toPlay, playerHand)
-#                             #                         playerHand = sort(playerHand)
-#                             #                         discard.append(pickedUp)
-#                             #                         printField()
-#                             #                         print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         continue
-#                             #                     else:
-#                             #                         playerField[list(toPlay.keys())[0]] = toPlay[list(toPlay.keys())[0]]
-#                             #                 elif countNumWC(toPlay[list(toPlay.keys())[0]]) + countNumWC(playerField[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) + len(playerField[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]) - countNumWC(playerField[list(toPlay.keys())[0]]):
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     printField()
-#                             #                     print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     continue
-#                             #                 else:
-#                             #                     for card in toPlay[list(toPlay.keys())[0]]:
-#                             #                         playerField[list(toPlay.keys())[0]].append(card)
-#                             #                 score = calcValueFieldNoThrees(playerField)
-#                             #                 if score >= 90:
-#                             #                     for card in discard:
-#                             #                         # if card == pickedUp:
-#                             #                         #     continue 
-#                             #                         if card == "3D" or card == "3H":
-#                             #                             if '3R' not in playerField.keys():
-#                             #                                 playerField['3R'] = [card]
-#                             #                             else:
-#                             #                                 playerField['3R'].append(card)
-#                             #                             continue 
-#                             #                         playerHand.append(card)
-#                             #                     discard.clear()
-#                             #                     playerHand = sort(playerHand)
-#                             #                     # setPlayerTurn()
-#                             #                     isPlayerTurnOne = False
-#                             #                     do = False
-#                             #                 printField()
-#                             #                 if len(playerHand) == 0:
-#                             #                     do = False
-#                             #                     break
-#                             #                 print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             # elif action == "D":
-#                             #     test = draw(playerHand, playerField, 2)
-#                             #     if test == "end":
-#                             #         return
-#                             #     playerHand = sort(playerHand)
-#                             #     ct = 0
-#                             #     print(toPlay)
-#                             #     for card in playerField[list(toPlay.keys())[0]]:
-#                             #         if card == pickedUp and ct < 1:
-#                             #             discard.append(card)
-#                             #             ct += 1
-#                             #         else:
-#                             #             playerHand.append(card)
-#                             #     del playerField[list(toPlay.keys())[0]]
-#                             #     # printField()
-#                             #     do = False
-#                             #     action = "E"
-#                             #     playerHand = sort(playerHand)
-#                             #     printField()
-#                             #     break
-#                             # else:
-#                             #     print("I'm sorry, that is not a valid action, type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the pile.")
-#                             #     continue
-#                         elif playerScore >= 3000 and score < 120:
-#                             action = playCards(pickedUp, scoreToBeat = 120)
-#                             if action == "end":
-#                                 return
-#                             elif action == "br":
-#                                 break
-#                             elif action == "cont":
-#                                 continue
-                            
-#                             # action = input().upper()
-#                             # do=True
-#                             # if action == "Play" or action == "P" or action == "p":
-#                             #     printField()
-#                             #     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #     while do:
-#                             #         action = input().upper()
-#                             #         if (action == 'E' or action == "e") and not isPlayerTurnOne:
-#                             #             ct = 0
-#                             #             for card in playerField[list(toPlay.keys())[0]]:
-#                             #                 if card == pickedUp and ct < 1:
-#                             #                     discard.append(card)
-#                             #                     ct += 1
-#                             #                 else:
-#                             #                     playerHand.append(card)
-#                             #             del playerField[list(toPlay.keys())[0]]
-#                             #             printField()
-#                             #             print("Type 'D' to draw or 'U' to pick up the discard pile.")
-#                             #             break
-#                             #         elif action  == "E":
-#                             #             printField()
-#                             #             break
-#                             #         elif hasLetter(action):
-#                             #             print("I'm sorry, your input was not a number.  Please enter a number.")
-#                             #         elif (not int(action) > 0 or not int(action) <= len(playerHand)):
-#                             #             print("I'm sorry, you cannot play that many cards.  Please enter a different number.")
-#                             #         elif len(playerHand) - int(action) <= 1 and not canGoOut(playerHand, playerField):
-#                             #             print("I'm sorry, you cannot go out because you do not have a canasta.  Please enter a different number.")
-#                             #         else:
-#                             #             numToPlay = int(action)
-#                             #             toPlay = {}
-#                             #             i = 0
-#                             #             needBreak = False
-#                             #             while i < numToPlay:
-#                             #                 if not do:
-#                             #                     break
-#                             #                 if not i==0:
-#                             #                     printField()
-#                             #                     print("Please enter the next card.")
-#                             #                 else:
-#                             #                     printField()
-#                             #                     print("Enter the rank of the canasta you would like to play on. Type 'E' to exit.")
-#                             #                     while do:
-#                             #                         action = input().upper()
-#                             #                         printField()
-#                             #                         if action == "E" or action == "e":
-#                             #                             do = False
-#                             #                             needBreak = True
-#                             #                             print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         elif len(action) > 1 or (not action == "J" and not action == "Q" and not action == "K" and not action == "O" and not action == "A" and not action == '0' and (not action > '2' or not action <= '9')):
-#                             #                             print("I'm sorry, that is not a legal rank.  Please choose a different rank.")
-#                             #                         else:
-#                             #                             if action not in playerField.keys() and numToPlay < 3:                                            
-#                             #                                 print("Note, you need to play more cards to start this canasta.  Number of cards to play automatically increased to 3.  If you cannot play 3 cards, type 'E' to exit.")
-#                             #                                 numToPlay = 3
-#                             #                             toPlay[action] = []
-#                             #                             do = False
-#                             #                             print("Enter the symbol (e.g., 'AC') of one of the cards you would like to play. Type 'E' to exit.")
-#                             #                 i += 1
-#                             #                 if needBreak:
-#                             #                     do = True
-#                             #                     break
-#                             #                 do = True
-#                             #                 while do:
-#                             #                     action = input().upper()
-#                             #                     if action == "E" or action == "e":
-#                             #                         do = False
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     elif action not in playerHand:
-#                             #                         print("I'm sorry, that card is not in the player's hand, choose a different card.")
-#                             #                     else:
-#                             #                         if not action[0] == list(toPlay.keys())[0] and not action[0] == 'O' and not action[0] == '2':
-#                             #                             print("I'm sorry, that card cannot be played on this rank of canasta.  Choose a different card.")
-#                             #                         else:
-#                             #                             toPlay[list(toPlay.keys())[0]].append(action)
-#                             #                             playerHand.remove(action)
-#                             #                             do=False
-#                             #                 do=True
-#                             #                 if action == "E" or action == "e":
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     playerHand = sort(playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     break
-#                             #             if not action == "E" and not action == "e":
-#                             #                 if list(toPlay.keys())[0] not in playerField.keys():
-#                             #                     if countNumWC(toPlay[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]):
-#                             #                         retToHand(toPlay, playerHand)
-#                             #                         playerHand = sort(playerHand)
-#                             #                         discard.append(pickedUp)
-#                             #                         printField()
-#                             #                         print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                         continue
-#                             #                     else:
-#                             #                         playerField[list(toPlay.keys())[0]] = toPlay[list(toPlay.keys())[0]]
-#                             #                 elif countNumWC(toPlay[list(toPlay.keys())[0]]) + countNumWC(playerField[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) + len(playerField[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]) - countNumWC(playerField[list(toPlay.keys())[0]]):
-#                             #                     retToHand(toPlay, playerHand)
-#                             #                     discard.append(pickedUp)
-#                             #                     printField()
-#                             #                     print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             #                     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             #                     continue
-#                             #                 else:
-#                             #                     for card in toPlay[list(toPlay.keys())[0]]:
-#                             #                         playerField[list(toPlay.keys())[0]].append(card)
-#                             #                 score = calcValueFieldNoThrees(playerField)
-#                             #                 if score >= 120:
-#                             #                     for card in discard:
-#                             #                         # if card == pickedUp:
-#                             #                         #     continue  
-#                             #                         if card == "3D" or card == "3H":
-#                             #                             if '3R' not in playerField.keys():
-#                             #                                 playerField['3R'] = [card]
-#                             #                             else:
-#                             #                                 playerField['3R'].append(card)
-#                             #                             continue
-#                             #                         playerHand.append(card)
-#                             #                     discard.clear()
-#                             #                     playerHand = sort(playerHand)
-#                             #                     # setPlayerTurn()
-#                             #                     isPlayerTurnOne = False
-#                             #                     do = False
-#                             #                 printField()
-#                             #                 if len(playerHand) == 0:
-#                             #                     do = False
-#                             #                     break
-#                             #                 print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             # elif action == "D":
-#                             #     test = draw(playerHand, playerField, 2)
-#                             #     if test == "end":
-#                             #         return
-#                             #     playerHand = sort(playerHand)
-#                             #     ct = 0
-#                             #     print(toPlay)
-#                             #     for card in playerField[list(toPlay.keys())[0]]:
-#                             #         if card == pickedUp and ct < 1:
-#                             #             discard.append(card)
-#                             #             ct += 1
-#                             #         else:
-#                             #             playerHand.append(card)
-#                             #     del playerField[list(toPlay.keys())[0]]
-#                             #     # printField()
-#                             #     do = False
-#                             #     action = "E"
-#                             #     playerHand = sort(playerHand)
-#                             #     printField()
-#                             #     break
-#                             # else:
-#                             #     print("I'm sorry, that is not a valid action, type 'P' to play cards from your hand or 'D' to draw from the deck instead of picking up the pile.")
-#                             #     continue
-#                         ct = 0
-#                         if action == 'E' and isPlayerTurnOne:
-#                             for card in playerField[list(toPlay.keys())[0]]:
-#                                 if card == pickedUp and ct < 1:
-#                                     discard.append(card)
-#                                     ct += 1
-#                                 else:
-#                                     playerHand.append(card)
-#                             del playerField[list(toPlay.keys())[0]]
-#                             print("Type 'D' to draw two cards or 'U' to pick up the discard pile.")
-#                             break
-#                         elif action == 'E':
-#                             do=False
-#                             break
-#                         setPlayerTurn()
-#                         do=False
-#                         break
-#                     if not action == 'E':
-#                         for card in discard:
-#                             # if card == pickedUp:
-#                             #     continue
-#                             if card == "3D" or card == "3H":
-#                                 if '3R' not in playerField.keys():
-#                                     playerField['3R'] = [card]
-#                                 else:
-#                                     playerField['3R'].append(card)
-#                                 continue
-#                             playerHand.append(card)
-#                         discard.clear()
-#                         playerHand = sort(playerHand)
-#                         printField()
-#             else:
-#                 print("I'm sorry, you cannot play that card.  Please draw instead.")
-#                 discard.append(pickedUp)
-#         else:
-#             print("I'm sorry, that is not a valid action, type 'D' to draw two cards or 'U' to pick up the discard pile.")
-#     print("Type 'P' to play cards from your hand or 'C' to discard and end your turn.")
-#     do = True
-#     while do:
-#         action = input().upper()
-#         if action == "Discard" or action == "C" or action == "c":
-#             if isPlayerTurnOne and len(playerField.keys()) > 0 and not onlyRedThrees(playerField):
-#                 score = calcValueField(playerField)
-#                 for rank in playerField.keys():
-#                     if rank == '3R':
-#                         if len(playerField[rank]) == 4:
-#                             score -= 800
-#                         else:
-#                             score -= 100*len(playerField[rank])
-#                 if playerScore < 1500 and score < 50:
-#                     toTrim = []
-#                     for rank in playerField:
-#                         if not rank == "3R":
-#                             toPlay[rank] = playerField[rank]
-#                             retToHand(toPlay, playerHand)
-#                             playerHand = sort(playerHand)
-#                             toTrim.append(rank)
-#                     for rank in toTrim:
-#                         del playerField[rank]
-#                     print("I'm sorry, you need to make 50 points on your first play.  All cards played have been returned to your hand.")
-#                     print("Type 'P' to play cards from your hand or 'C' to discard and end your turn.")
-#                     continue
-#                 elif playerScore >= 1500 and playerScore < 3000 and score < 90:
-#                     toTrim = []
-#                     for rank in playerField:
-#                         if not rank == "3R":
-#                             toPlay[rank] = playerField[rank]
-#                             retToHand(toPlay, playerHand)
-#                             playerHand = sort(playerHand)
-#                             toTrim.append(rank)
-#                     for rank in toTrim:
-#                         del playerField[rank]
-#                     print("I'm sorry, you need to make 50 points on your first play.  All cards played have been returned to your hand.")
-#                     print("Type 'P' to play cards from your hand or 'C' to discard and end your turn.")
-#                     continue
-#                 elif playerScore >= 3000 and score < 120:
-#                     toTrim = []
-#                     for rank in playerField:
-#                         if not rank == "3R":
-#                             toPlay[rank] = playerField[rank]
-#                             retToHand(toPlay, playerHand)
-#                             playerHand = sort(playerHand)
-#                             toTrim.append(rank)
-#                     for rank in toTrim:
-#                         del playerField[rank]
-#                     print("I'm sorry, you need to make 50 points on your first play.  All cards played have been returned to your hand.")
-#                     print("Type 'P' to play cards from your hand or 'C' to discard and end your turn.")
-#                     continue
-#                 setPlayerTurn()
-#             printField()
-#             print("Type the symbol (e.g., 'AC') of the card you would like to discard.  Type 'E' to exit.")
-#             while do:
-#                 action = input().upper()
-#                 if action == 'E' or action == "e":
-#                     print("Type 'P' to play cards from your hand or 'C' to discard and end your turn.")
-#                     break
-#                 elif action not in playerHand:
-#                     print("I'm sorry, that card is not in the player's hand, type the symbol (e.g., 'AC') of the card you would like to discard.")
-#                 else:
-#                     discard.append(playerHand.pop(playerHand.index(action)))
-#                     playerHand = sort(playerHand)
-#                     do = False
-#         elif action == "Play" or action == "P" or action == "p":
-#             printField()
-#             print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#             while do:
-#                 action = input().upper()
-#                 if action == 'E' or action == "e":
-#                     print("Type 'P' to play cards from your hand or 'C' to discard and end your turn.")
-#                     break
-#                 elif hasLetter(action):
-#                     print("I'm sorry, your input was not a number.  Please enter a number.")
-#                 elif (not int(action) > 0 or not int(action) <= len(playerHand)):
-#                     print("I'm sorry, you cannot play that many cards.  Please enter a different number.")
-#                 elif len(playerHand) - int(action) <= 1 and not canGoOut(playerHand, playerField):
-#                     print("I'm sorry, you cannot go out because you do not have a canasta.  Please enter a different number.")
-#                 else:
-#                     numToPlay = int(action)
-#                     toPlay = {}
-#                     i = 0
-#                     needBreak = False
-#                     while i < numToPlay:
-#                         if not do:
-#                             break
-#                         if not i==0:
-#                             printField()
-#                             print("Please enter the next card.")
-#                         else:
-#                             printField()
-#                             print("Enter the rank of the canasta you would like to play on. Type 'E' to exit.")
-#                             while do:
-#                                 action = input().upper()
-#                                 printField()
-#                                 if action == "E" or action == "e":
-#                                     do = False
-#                                     needBreak = True
-#                                     print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                                 elif len(action) > 1 or (not action == "J" and not action == "Q" and not action == "K" and not action == "O" and not action == "A" and not action == '0' and (not action > '2' or not action <= '9')):
-#                                     print("I'm sorry, that is not a legal rank.  Please choose a different rank.")
-#                                 elif action[0] == '3' and not checkOnlyBlackThrees(playerHand):
-#                                     print("I'm sorry, but you need to play the rest of the cards in your hand before you play your black threes.")
-#                                 else:
-#                                     if action not in playerField.keys() and numToPlay < 3:                                            
-#                                         print("Note, you need to play more cards to start this canasta.  Number of cards to play automatically increased to 3.  If you cannot play 3 cards, type 'E' to exit.")
-#                                         numToPlay = 3
-#                                     toPlay[action] = []
-#                                     do = False
-#                                     print("Enter the symbol (e.g., 'AC') of one of the cards you would like to play. Type 'E' to exit.")
-#                         i += 1
-#                         if needBreak:
-#                             do = True
-#                             break
-#                         do = True
-#                         while do:
-#                             action = input().upper()
-#                             if action == "E" or action == "e":
-#                                 do = False
-#                                 print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             elif action not in playerHand:
-#                                 print("I'm sorry, that card is not in the player's hand, choose a different card.")
-#                             else:
-#                                 if (not action[0] == list(toPlay.keys())[0] and not action[0] == 'O' and not action[0] == '2') or (list(toPlay.keys())[0] == '3' and not action[0] == '3'):
-#                                     print("I'm sorry, that card cannot be played on this rank of canasta.  Choose a different card.")
-#                                 else:
-#                                     toPlay[list(toPlay.keys())[0]].append(action)
-#                                     playerHand.remove(action)
-#                                     do=False
-#                         do=True
-#                         if action == "E" or action == "e":
-#                             retToHand(toPlay, playerHand)
-#                             playerHand = sort(playerHand)
-#                             break
-#                     if not action == "E" and not action == "e":
-#                         if list(toPlay.keys())[0] not in playerField.keys():
-#                             if countNumWC(toPlay[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]):
-#                                 retToHand(toPlay, playerHand)
-#                                 playerHand = sort(playerHand)
-#                                 printField()
-#                                 print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                                 print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                                 continue
-#                             else:
-#                                 playerField[list(toPlay.keys())[0]] = toPlay[list(toPlay.keys())[0]]
-#                         elif countNumWC(toPlay[list(toPlay.keys())[0]]) + countNumWC(playerField[list(toPlay.keys())[0]]) >= len(toPlay[list(toPlay.keys())[0]]) + len(playerField[list(toPlay.keys())[0]]) - countNumWC(toPlay[list(toPlay.keys())[0]]) - countNumWC(playerField[list(toPlay.keys())[0]]):
-#                             retToHand(toPlay, playerHand)
-#                             playerHand = sort(playerHand)
-#                             printField()
-#                             print("I'm sorry, but you are trying to play too many wildcards on this canasta.  All cards were returned to your hand.")
-#                             print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#                             continue
-#                         else:
-#                             for card in toPlay[list(toPlay.keys())[0]]:
-#                                 playerField[list(toPlay.keys())[0]].append(card)
-#                         printField()
-#                         if len(playerHand) == 0:
-#                             do = False
-#                             break
-#                         print("How many cards from your hand would you like to play? Type 'E' to exit.")
-#         else:
-#             print("I'm sorry, that is not a valid action, type 'P' to play cards from your hand or 'C' to discard and end your turn.")
